@@ -1,0 +1,41 @@
+{% extends 'admin.html' %}
+
+{% block head %}
+    <meta charset="utf-8">
+    <title>aiohttp Admin</title>
+    <link rel="stylesheet" href="{{ url('admin.static', filename='bootstrap/css/bootstrap.min.css') }}" />
+    <link rel="stylesheet" href="{{ url('admin.static', filename='ng-admin/build/ng-admin-only.min.css') }}" />
+{% endblock %}
+{% block body %}
+    <div ui-view></div>
+    <script src="{{ url('admin.static', filename='angular/angular.js') }}"></script>
+    <script src="{{ url('admin.static', filename='angular-bootstrap/ui-bootstrap-tpls.min.js') }}"></script>
+    <script src="{{ url('admin.static', filename='angular-bootstrap/ui-bootstrap.min.js') }}"></script>
+    <script src="{{ url('admin.static', filename='angular-resource/angular-resource.min.js') }}"></script>
+    <script src="{{ url('admin.static', filename='angular-sanitize/angular-sanitize.min.js') }}"></script>
+    <script src="{{ url('admin.static', filename='angular-ui-codemirror/ui-codemirror.min.js') }}"></script>
+    <script src="{{ url('admin.static', filename='angular-ui-router/release/angular-ui-router.min.js') }}"></script>
+    <script src="{{ url('admin.static', filename='angular-numeraljs/dist/angular-numeraljs.min.js') }}"></script>
+    <script src="{{ url('admin.static', filename='humane-js/humane.js') }}"></script>
+    <script src="{{ url('admin.static', filename='inflection/inflection.min.js') }}"></script>
+    <script src="{{ url('admin.static', filename='lodash/lodash.min.js') }}"></script>
+    <script src="{{ url('admin.static', filename='ng-file-upload/ng-file-upload-all.min.js') }}"></script>
+    <script src="{{ url('admin.static', filename='ngInflection/ngInflection.js') }}"></script>
+    <script src="{{ url('admin.static', filename='nprogress/nprogress.js') }}"></script>
+    <script src="{{ url('admin.static', filename='restangular/dist/restangular.min.js') }}"></script>
+    <script src="{{ url('admin.static', filename='textAngular/dist/textAngular.min.js') }}"></script>
+    <script src="{{ url('admin.static', filename='papaparse/papaparse.min.js') }}"></script>
+    <script src="{{ url('admin.static', filename='numeral/min/numeral.min.js') }}"></script>
+    <script src="{{ url('admin.static', filename='codemirror/lib/codemirror.js') }}"></script>
+    <script src="{{ url('admin.static', filename='codemirror/addon/edit/closebrackets.js') }}"></script>
+    <script src="{{ url('admin.static', filename='codemirror/addon/lint/lint.js') }}"></script>
+    <script src="{{ url('admin.static', filename='jsonlint/lib/jsonlint.js') }}"></script>
+    <script src="{{ url('admin.static', filename='codemirror/addon/lint/json-lint.js') }}"></script>
+    <script src="{{ url('admin.static', filename='codemirror/addon/selection/active-line.js') }}"></script>
+    <script src="{{ url('admin.static', filename='codemirror/mode/javascript/javascript.js') }}"></script>
+    <script src="{{ url('admin.static', filename='ng-admin/build/ng-admin-only.min.js') }}"></script>
+
+    <!-- Actual admin configuration file -->
+    <script src="{{ url('admin.config', filename='config.js') }}" type="text/javascript"></script>
+{% endblock %}
+

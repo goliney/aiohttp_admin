@@ -49,7 +49,7 @@ def mysql_conf():
             "password": None,
             "port": 3306,
             "minsize": 1,
-            "maxsize": 3}
+            "maxsize": 1}
     return conf
 
 

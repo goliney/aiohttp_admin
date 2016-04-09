@@ -58,11 +58,12 @@ class PGResource(AbstractResource):
                 .offset(offset)
                 .limit(limit)
                 .order_by(sort_dir(sort_field)))
-
+            #import ipdb
+            #ipdb.set_trace()
             recs = await cursor.fetchall()
-
             entities = list(map(dict, recs))
 
+            # conn.connection.close()
         headers = {'X-Total-Count': str(count)}
         return json_response(entities, headers=headers)
 

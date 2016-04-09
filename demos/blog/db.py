@@ -46,4 +46,7 @@ comment = sa.Table(
     sa.Column('created_at', sa.Date, nullable=False),
 
     # Indexes #
-    sa.PrimaryKeyConstraint('id', name='comment_id_pkey'))
+    sa.PrimaryKeyConstraint('id', name='comment_id_pkey'),
+    sa.ForeignKeyConstraint(['post_id'], [post.c.id], name='post_fkey',
+                            ondelete='CASCADE')
+)

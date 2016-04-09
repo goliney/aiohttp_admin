@@ -20,7 +20,11 @@ TEMPLATES_ROOT = pathlib.Path(__file__).parent / 'templates'
 
 
 def setup_admin(app, pg, admin_config_path):
-    admin = aiohttp_admin.setup(app, admin_config_path)
+    template = 'admin_debug.html'
+    static_folder = str(PROJ_ROOT.parent.parent / 'node_modules')
+    admin = aiohttp_admin.setup(app, admin_config_path,
+                                template_name=template,
+                                static_folder=static_folder)
 
     admin.add_resource(PGResource(pg, db.question, url='question'))
     admin.add_resource(PGResource(pg, db.choice, url='choice'))

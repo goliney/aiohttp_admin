@@ -143,7 +143,7 @@
         choice.creationView()
             .fields([
                 nga.field('choice_text', 'wysiwyg'),
-                nga.field('votes', 'number'),
+                nga.field('votes', 'string'),
                 nga.field('question_id', 'reference')
                     .label('Question')
                     .targetEntity(question)
