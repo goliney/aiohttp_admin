@@ -77,15 +77,6 @@
                     .cssClasses('hidden-xs'),
                 nga.field('views', 'number')
                     .cssClasses('hidden-xs'),
-                nga.field('backlinks', 'embedded_list') // display list of related comments
-                    .label('Links')
-                    .map(links => links ? links.length : '')
-                    .template('{{ value }}'),
-                nga.field('tags', 'reference_many') // a Reference is a particular type of field that references another entity
-                    .targetEntity(tag) // the tag entity is defined later in this file
-                    .targetField(nga.field('name')) // the field to be displayed in this list
-                    .cssClasses('hidden-xs')
-                    .singleApiCall(ids => { return {'id': {'in': ids} }; })
             ])
             .filters([
                 nga.field('category', 'choice').choices([
@@ -213,9 +204,6 @@
                 nga.field('author.name')
                     .label('Author')
                     .cssClasses('hidden-xs'),
-                nga.field('body', 'wysiwyg')
-                    .stripTags(true)
-                    .map(truncate),
                 nga.field('post_id', 'reference')
                     .label('Post')
                     .targetEntity(post)

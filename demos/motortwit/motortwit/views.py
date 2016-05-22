@@ -1,8 +1,19 @@
 import aiohttp_jinja2
+import trafaret as t
 
 from aiohttp import web
 from aiohttp_session import get_session
 from bson import ObjectId
+from .security import check_password_hash, generate_password_hash
+from .utils import redirect_response
+
+
+RegisterValidator = t.Dict({
+    t.Key("username"): t.String(max_length=30),
+    t.Key("email"): t.Email,
+    t.Key("password"): t.String,
+    t.Key("password2"): t.String,
+})
 
 
 class SiteHandler:
@@ -20,9 +31,7 @@ class SiteHandler:
         user_id = session.get('user_id')
 
         if user_id is None:
-            router = request.app.router
-            location = router['public_timeline'].url()
-            raise web.HTTPFound(location=location)
+            return redirect_response(request, 'public_timeline')
 
         query = {'who_id': ObjectId(user_id)}
         filter = {'whom_id': 1}
@@ -86,21 +95,95 @@ class SiteHandler:
 #    return render_template('timeline.html', messages=messages,
 #                           followed=followed, profile_user=profile_user)
 
-    @aiohttp_jinja2.template('timeline.html')
+#@app.route('/login', methods=['GET', 'POST'])
+#def login():
+#    """Logs the user in."""
+#    if g.user:
+#        return redirect(url_for('timeline'))
+#    error = None
+#    if request.method == 'POST':
+#        user = mongo.db.user.find_one({'username': request.form['username']})
+#        if user is None:
+#            error = 'Invalid username'
+#        elif not check_password_hash(user['pw_hash'], request.form['password']):
+#            error = 'Invalid password'
+#        else:
+#            flash('You were logged in')
+#            session['user_id'] = str(user['_id'])
+#            return redirect(url_for('timeline'))
+#    return render_template('login.html', error=error)
+
+    @aiohttp_jinja2.template('login.html')
     async def login(self, request):
-        return {}
+        session = await get_session(request)
+        user_id = session.get('user_id')
+        if user_id is not None:
+            return redirect_response(request, 'timeline')
+
+        error = None
+        if request.method == "post":
+            form = await request.post()
+            query = {'username': request.form['username']}
+            user = await self.mongo.user.find_one(query)
+            if user is None:
+                error = 'Invalid username'
+            elif not check_password_hash(user['pw_hash'], form['password']):
+                error = 'Invalid password'
+            else:
+                session['user_id'] = str(user['_id'])
+                return redirect_response(request, 'timeline')
+        return {"error": error, "form": form}
 
     @aiohttp_jinja2.template('timeline.html')
     async def logout(self, request):
-        return {}
+        session = await get_session(request)
+        session.pop('user_id', None)
+        return redirect_response(request, 'public_timeline')
 
-    @aiohttp_jinja2.template('timeline.html')
+    @aiohttp_jinja2.template('register.html')
     async def register(self, request):
-        return {}
+        session = await get_session(request)
+        user_id = session.get('user_id')
+        if user_id is not None:
+            return redirect_response(request, 'timeline')
 
-    @aiohttp_jinja2.template('timeline.html')
-    async def timeline(self, request):
-        return {}
+        if request.method == "post":
+            form = await request.post()
+            form = RegisterValidator(form)
+            pw_hash = generate_password_hash(form['password'])
+            query = {'username': form['username'],
+                     'email': form['email'],
+                     'pw_hash': pw_hash}
+            await self.mongo.user.insert(query)
+            return redirect_response(request, 'login')
+
+        return {"error": "error", "form": form}
+
+#@app.route('/register', methods=['GET', 'POST'])
+#def register():
+#    """Registers the user."""
+#    if g.user:
+#        return redirect(url_for('timeline'))
+#    error = None
+#    if request.method == 'POST':
+#        if not request.form['username']:
+#            error = 'You have to enter a username'
+#        elif not request.form['email'] or '@' not in request.form['email']:
+#            error = 'You have to enter a valid email address'
+#        elif not request.form['password']:
+#            error = 'You have to enter a password'
+#        elif request.form['password'] != request.form['password2']:
+#            error = 'The two passwords do not match'
+#        elif get_user_id(request.form['username']) is not None:
+#            error = 'The username is already taken'
+#        else:
+#            mongo.db.user.insert(
+#                {'username': request.form['username'],
+#                 'email': request.form['email'],
+#                 'pw_hash': generate_password_hash(request.form['password'])})
+#            flash('You were successfully registered and can login now')
+#            return redirect(url_for('login'))
+#    return render_template('register.html', error=error)
 
 
 #import datetime
@@ -142,58 +225,6 @@ class SiteHandler:
 #from werkzeug.security import check_password_hash, generate_password_hash
 #from flask.ext.pymongo import PyMongo
 #from bson.objectid import ObjectId
-#
-#
-#
-#@app.before_request
-#def before_request():
-#    g.user = None
-#    if 'user_id' in session:
-#        g.user = mongo.db.user.find_one({'_id': ObjectId(session['user_id'])})
-#
-#
-#@app.route('/')
-#def timeline():
-#    """Shows a users timeline or if no user is logged in it will
-#    redirect to the public timeline.  This timeline shows the user's
-#    messages as well as all the messages of followed users.
-#    """
-#    if not g.user:
-#        return redirect(url_for('public_timeline'))
-#    followed = mongo.db.follower.find_one(
-#        {'who_id': ObjectId(session['user_id'])}, {'whom_id': 1})
-#    if followed is None:
-#        followed = {'whom_id': []}
-#    messages = mongo.db.message.find(
-#        {'$or': [
-#            {'author_id': ObjectId(session['user_id'])},
-#            {'author_id': {'$in': followed['whom_id']}}
-#        ]}).sort('pub_date', -1)
-#    return render_template('timeline.html', messages=messages)
-#
-#
-#@app.route('/public')
-#def public_timeline():
-#    """Displays the latest messages of all users."""
-#    messages = mongo.db.message.find().sort('pub_date', -1)
-#    return render_template('timeline.html', messages=messages)
-#
-#
-#@app.route('/<username>')
-#def user_timeline(username):
-#    """Display's a users tweets."""
-#    profile_user = mongo.db.user.find_one({'username': username})
-#    if profile_user is None:
-#        abort(404)
-#    followed = False
-#    if g.user:
-#        followed = mongo.db.follower.find_one(
-#            {'who_id': ObjectId(session['user_id']),
-#             'whom_id': {'$in': [ObjectId(profile_user['_id'])]}}) is not None
-#    messages = mongo.db.message.find(
-#        {'author_id': ObjectId(profile_user['_id'])}).sort('pub_date', -1)
-#    return render_template('timeline.html', messages=messages,
-#                           followed=followed, profile_user=profile_user)
 #
 #
 #@app.route('/<username>/follow')
@@ -244,25 +275,6 @@ class SiteHandler:
 #    return redirect(url_for('timeline'))
 #
 #
-#@app.route('/login', methods=['GET', 'POST'])
-#def login():
-#    """Logs the user in."""
-#    if g.user:
-#        return redirect(url_for('timeline'))
-#    error = None
-#    if request.method == 'POST':
-#        user = mongo.db.user.find_one({'username': request.form['username']})
-#        if user is None:
-#            error = 'Invalid username'
-#        elif not check_password_hash(user['pw_hash'], request.form['password']):
-#            error = 'Invalid password'
-#        else:
-#            flash('You were logged in')
-#            session['user_id'] = str(user['_id'])
-#            return redirect(url_for('timeline'))
-#    return render_template('login.html', error=error)
-#
-#
 #@app.route('/register', methods=['GET', 'POST'])
 #def register():
 #    """Registers the user."""
@@ -288,11 +300,3 @@ class SiteHandler:
 #            flash('You were successfully registered and can login now')
 #            return redirect(url_for('login'))
 #    return render_template('register.html', error=error)
-#
-#
-#@app.route('/logout')
-#def logout():
-#    """Logs the user out."""
-#    flash('You were logged out')
-#    session.pop('user_id', None)
-#    return redirect(url_for('public_timeline'))
