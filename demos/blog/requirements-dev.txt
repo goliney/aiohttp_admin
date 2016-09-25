@@ -1,4 +1,4 @@
 pyflakes
 pep8==1.7.0
 pytest
-ipdb
+ipdb==0.10.1
